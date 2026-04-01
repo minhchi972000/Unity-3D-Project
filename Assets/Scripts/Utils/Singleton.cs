@@ -25,7 +25,7 @@ namespace FarmValley.Utils
                 {
                     if (_instance == null)
                     {
-                        _instance = FindFirstObjectByType<T>();
+                        _instance = FindObjectOfType<T>();
 
                         if (_instance == null)
                         {

@@ -69,14 +69,14 @@ namespace FarmValley.UI
 
         private void OnCropSelected(string cropId)
         {
-            var inputHandler = FindFirstObjectByType<InputHandler>();
+            var inputHandler = FindObjectOfType<InputHandler>();
             if (inputHandler != null)
             {
                 inputHandler.SetSelectedCrop(cropId);
             }
 
             // Close this panel
-            var uiManager = FindFirstObjectByType<UIManager>();
+            var uiManager = FindObjectOfType<UIManager>();
             if (uiManager != null)
                 uiManager.CloseAllPanels();
 

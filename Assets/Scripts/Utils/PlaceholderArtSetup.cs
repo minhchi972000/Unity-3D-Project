@@ -110,6 +110,7 @@ namespace FarmValley.Utils
                 post.transform.localScale = new Vector3(0.08f, 0.35f, 0.08f);
                 post.GetComponent<Renderer>().material = woodMat;
                 post.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                DisableCollider(post);
                 post.isStatic = true;
             }
 
@@ -127,6 +128,7 @@ namespace FarmValley.Utils
                 rail.transform.rotation = rotation;
                 rail.transform.localScale = new Vector3(0.04f, 0.04f, length);
                 rail.GetComponent<Renderer>().material = woodMat;
+                DisableCollider(rail);
                 rail.isStatic = true;
             }
         }
@@ -205,6 +207,7 @@ namespace FarmValley.Utils
                 trunk.transform.localScale = new Vector3(0.2f, 0.75f, 0.2f);
                 trunk.GetComponent<Renderer>().material = trunkMat;
                 trunk.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                DisableCollider(trunk);
 
                 // Foliage layers
                 Color[] foliageColors = {
@@ -223,6 +226,7 @@ namespace FarmValley.Utils
                     foliage.transform.localScale = Vector3.one * sizes[i];
                     foliage.GetComponent<Renderer>().material = CreateMaterial(foliageColors[i]);
                     foliage.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                    DisableCollider(foliage);
                 }
 
                 tree.isStatic = true;
@@ -258,6 +262,7 @@ namespace FarmValley.Utils
                 flower.transform.SetParent(transform);
                 flower.GetComponent<Renderer>().material =
                     CreateMaterial(flowerColors[Random.Range(0, flowerColors.Length)]);
+                DisableCollider(flower);
                 flower.isStatic = true;
             }
 
@@ -280,8 +285,20 @@ namespace FarmValley.Utils
                 rock.transform.SetParent(transform);
                 rock.GetComponent<Renderer>().material = CreateMaterial(new Color(0.62f, 0.62f, 0.62f));
                 rock.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                DisableCollider(rock);
                 rock.isStatic = true;
             }
+        }
+
+        /// <summary>
+        /// Disable colliders on decorative objects to prevent them from
+        /// intercepting raycasts meant for farm plots and interactive elements.
+        /// </summary>
+        private void DisableCollider(GameObject obj)
+        {
+            var collider = obj.GetComponent<Collider>();
+            if (collider != null)
+                collider.enabled = false;
         }
 
         private Material CreateMaterial(Color color)

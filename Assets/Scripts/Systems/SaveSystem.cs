@@ -60,9 +60,9 @@ namespace FarmValley.Systems
             if (economy != null)
                 saveData.economy = economy.GetSaveData();
 
-            // Inventory
+            // Inventory (wrapped for JsonUtility compatibility)
             if (inventory != null)
-                saveData.inventory = inventory.GetSaveData();
+                saveData.inventory = new SerializableInventory(inventory.GetSaveData());
 
             // Farm grid states
             if (farmGrid != null)
@@ -137,9 +137,9 @@ namespace FarmValley.Systems
             if (economy != null)
                 economy.RestoreState(saveData.economy.coins, saveData.economy.xp, saveData.economy.level);
 
-            // Restore inventory
+            // Restore inventory (unwrap from serializable format)
             if (inventory != null && saveData.inventory != null)
-                inventory.RestoreItems(saveData.inventory);
+                inventory.RestoreItems(saveData.inventory.ToDictionary());
 
             // Restore farm grid
             if (farmGrid != null && saveData.plotStates != null)
@@ -188,19 +188,53 @@ namespace FarmValley.Systems
     }
 
     /// <summary>
-    /// Root save data container
+    /// Root save data container.
+    /// Uses SerializableInventory instead of Dictionary for JsonUtility compatibility.
     /// </summary>
     [System.Serializable]
     public class GameSaveData
     {
         public string lastSaveTime;
         public EconomySaveData economy;
-        public Dictionary<string, int> inventory;
+        public SerializableInventory inventory;
         public List<PlotState> plotStates;
         public List<GrowingCropSaveEntry> growingCrops;
         public List<AnimalSaveData> animals;
         public List<BuildingSaveData> buildings;
         public List<OrderSaveData> orders;
+    }
+
+    /// <summary>
+    /// JsonUtility-compatible wrapper for Dictionary&lt;string, int&gt;.
+    /// Unity's JsonUtility cannot serialize Dictionaries natively.
+    /// </summary>
+    [System.Serializable]
+    public class SerializableInventory
+    {
+        public List<string> keys = new List<string>();
+        public List<int> values = new List<int>();
+
+        public SerializableInventory() { }
+
+        public SerializableInventory(Dictionary<string, int> dict)
+        {
+            if (dict == null) return;
+            foreach (var kvp in dict)
+            {
+                keys.Add(kvp.Key);
+                values.Add(kvp.Value);
+            }
+        }
+
+        public Dictionary<string, int> ToDictionary()
+        {
+            var dict = new Dictionary<string, int>();
+            for (int i = 0; i < keys.Count && i < values.Count; i++)
+            {
+                dict[keys[i]] = values[i];
+            }
+            return dict;
+        }
     }
 
     [System.Serializable]

@@ -201,7 +201,7 @@ namespace FarmValley.UI
         private void BuySeed(CropData crop)
         {
             // Set the input handler to plant mode with this crop
-            var inputHandler = FindFirstObjectByType<InputHandler>();
+            var inputHandler = FindObjectOfType<InputHandler>();
             if (inputHandler != null)
             {
                 inputHandler.SetSelectedCrop(crop.cropId);

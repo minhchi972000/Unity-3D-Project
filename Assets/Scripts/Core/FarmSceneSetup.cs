@@ -25,7 +25,7 @@ namespace FarmValley.Core
         private void SetupLighting()
         {
             // Check if directional light already exists
-            var existingLight = FindFirstObjectByType<Light>();
+            var existingLight = FindObjectOfType<Light>();
             if (existingLight != null && existingLight.type == LightType.Directional)
                 return;
 
