@@ -160,6 +160,10 @@ namespace FarmValley.Systems
             if (animalSystem != null && saveData.animals != null)
                 animalSystem.RestoreAnimals(saveData.animals);
 
+            // Restore buildings
+            if (productionSystem != null && saveData.buildings != null)
+                productionSystem.RestoreBuildings(saveData.buildings);
+
             // Restore orders
             if (orderSystem != null && saveData.orders != null)
                 orderSystem.RestoreOrders(saveData.orders);

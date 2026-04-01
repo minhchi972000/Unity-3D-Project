@@ -248,6 +248,64 @@ namespace FarmValley.Systems
         }
 
         /// <summary>
+        /// Restore buildings from save data
+        /// </summary>
+        public void RestoreBuildings(List<BuildingSaveData> saveData)
+        {
+            // Clear existing buildings
+            foreach (Transform child in transform)
+            {
+                Destroy(child.gameObject);
+            }
+            buildings.Clear();
+
+            foreach (var data in saveData)
+            {
+                var buildingData = GameManager.Instance.Data.GetBuilding(data.buildingId);
+                if (buildingData == null)
+                {
+                    Debug.LogWarning($"[ProductionSystem] Could not find building data for '{data.buildingId}', skipping.");
+                    continue;
+                }
+
+                var queue = new List<ProductionSlot>();
+                if (data.productionSlots != null)
+                {
+                    foreach (var slotData in data.productionSlots)
+                    {
+                        var recipe = GameManager.Instance.Data.GetRecipe(slotData.recipeId);
+                        if (recipe == null)
+                        {
+                            Debug.LogWarning($"[ProductionSystem] Could not find recipe '{slotData.recipeId}', skipping slot.");
+                            continue;
+                        }
+
+                        queue.Add(new ProductionSlot
+                        {
+                            recipe = recipe,
+                            startTime = Time.time - slotData.elapsedTime,
+                            isComplete = slotData.isComplete,
+                        });
+                    }
+                }
+
+                var position = new Vector3(data.positionX, data.positionY, data.positionZ);
+                var instance = new BuildingInstance
+                {
+                    instanceId = data.instanceId,
+                    buildingData = buildingData,
+                    position = position,
+                    productionQueue = queue,
+                };
+
+                buildings.Add(instance);
+                SpawnBuildingVisual(instance);
+            }
+
+            Debug.Log($"[ProductionSystem] Restored {buildings.Count} buildings");
+        }
+
+        /// <summary>
         /// Get save data
         /// </summary>
         public List<BuildingSaveData> GetSaveData()

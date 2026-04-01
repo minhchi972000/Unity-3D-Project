@@ -131,7 +131,7 @@ namespace FarmValley.Camera
             {
                 float mouseX = Input.GetAxis("Mouse X");
                 float mouseY = Input.GetAxis("Mouse Y");
-                PanCamera(-mouseX * panSpeed * 0.5f, -mouseY * panSpeed * 0.5f);
+                PanCamera(-mouseX * 0.5f, -mouseY * 0.5f);
             }
 
             // Scroll wheel to zoom
@@ -150,7 +150,7 @@ namespace FarmValley.Camera
 
             if (Mathf.Abs(h) > 0.01f || Mathf.Abs(v) > 0.01f)
             {
-                PanCamera(h * panSpeed * Time.deltaTime * 3f, v * panSpeed * Time.deltaTime * 3f);
+                PanCamera(h * 3f, v * 3f);
             }
         }
 
@@ -178,7 +178,8 @@ namespace FarmValley.Camera
         {
             // Smooth position
             float angleRad = cameraAngle * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(0, cameraHeight, -cameraDistance * Mathf.Cos(angleRad));
+            float currentDistance = cam.orthographic ? cameraDistance : Mathf.Lerp(cameraDistance, targetZoom, 1f);
+            Vector3 offset = new Vector3(0, cameraHeight, -currentDistance * Mathf.Cos(angleRad));
             Vector3 desiredPos = targetPosition + offset;
             transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * panSmoothing);
 

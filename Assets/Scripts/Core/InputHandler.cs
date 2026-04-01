@@ -77,7 +77,7 @@ namespace FarmValley.Core
         {
             Ray ray = mainCamera.ScreenPointToRay(screenPosition);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance))
+            if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, interactableLayer))
             {
                 // Check if we hit a farm plot
                 var farmPlot = hit.collider.GetComponent<FarmPlot>();
