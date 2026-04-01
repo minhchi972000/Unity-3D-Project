@@ -55,13 +55,20 @@ Assets/
 │   ├── Camera/
 │   │   └── IsometricCameraController.cs  # Pan, zoom, isometric view
 │   │
+│   ├── Player/                  # Player character system
+│   │   ├── PlayerController.cs  # WASD/arrow key movement + interaction
+│   │   ├── PlayerVisualSetup.cs # Placeholder 3D character from primitives
+│   │   ├── PlayerAnimator.cs    # Procedural idle/walk/run animations
+│   │   └── PlayerInteraction.cs # E-key interaction with plots/animals
+│   │
 │   ├── Events/
 │   │   └── GameEvents.cs        # Static event bus for system communication
 │   │
 │   └── Utils/
 │       ├── Singleton.cs         # Generic singleton MonoBehaviour base
 │       ├── Constants.cs         # Game-wide constants
-│       └── PlaceholderArtSetup.cs  # Runtime placeholder art generator
+│       ├── PlaceholderArtSetup.cs  # Runtime placeholder art generator
+│       └── SpriteSheetImporter.cs  # OpenGameArt sprite sheet loader
 │
 ├── ScriptableObjects/           # Data assets (create in editor)
 │   ├── Crops/                   # Wheat, Corn, Carrot data
@@ -112,8 +119,13 @@ FarmScene
 │   ├── InputHandler             [InputHandler.cs]
 │   └── SceneSetup               [FarmSceneSetup.cs, PlaceholderArtSetup.cs]
 │
+├── --- PLAYER ---
+│   └── Player                   [PlayerController.cs, PlayerVisualSetup.cs,
+│                                 PlayerAnimator.cs, PlayerInteraction.cs]
+│
 ├── --- CAMERA ---
 │   └── Main Camera              [Camera, IsometricCameraController.cs]
+│                                 (follows Player automatically)
 │
 ├── --- ENVIRONMENT ---
 │   ├── Ground                   (auto-generated or placed)
@@ -264,14 +276,47 @@ FarmScene
     - Place notification parent at top-right of screen
     - Auto-destroy after 3 seconds
 
-### Phase 5: Tags & Layers
+### Phase 5: Player Character
 
-18. **Configure Tags**:
+18. **Create Player**:
+    - Create an empty GameObject named `Player`
+    - Add scripts: `PlayerController.cs`, `PlayerVisualSetup.cs`, `PlayerAnimator.cs`, `PlayerInteraction.cs`
+    - Position at farm center: (6, 0.5, 6)
+    - Add a CapsuleCollider (height 1.8, radius 0.3) and Rigidbody (freeze rotation X/Y/Z)
+    - PlayerVisualSetup auto-generates the farmer character model on Start
+    - PlayerAnimator auto-finds visual parts on Start
+
+19. **Wire Camera to Player**:
+    - Select Main Camera → IsometricCameraController
+    - Drag the Player GameObject into the `Player Target` field
+    - Enable `Follow Player` checkbox (enabled by default)
+    - Camera will now follow the player instead of WASD panning
+
+20. **Player Controls**:
+    - **WASD / Arrow Keys**: Move player around the farm
+    - **Shift**: Hold to run (faster movement)
+    - **E**: Interact with nearby plots and animals
+    - Player stays within farm bounds automatically
+    - Camera follows player with smooth lerp
+
+### Phase 6: Sprite Assets (Optional)
+
+21. **Import OpenGameArt Sprites**:
+    - Sprite sheets are in `Assets/Art/Sprites/` (materials1-3.png)
+    - See `Assets/Art/Sprites/ATTRIBUTION.md` for import instructions
+    - Select each PNG → Inspector → Texture Type: Sprite (2D and UI)
+    - Sprite Mode: Multiple → Sprite Editor → Slice (Grid, 16x16) → Apply
+    - Filter Mode: Point (no filter) for pixel art crispness
+    - Optionally add `SpriteSheetImporter.cs` to a GameObject and assign sheets
+
+### Phase 7: Tags & Layers
+
+22. **Configure Tags**:
     - Add tag: `FarmPlot`
     - Add tag: `AnimalPen`
     - Add tag: `Building`
 
-19. **Configure Layers** (optional):
+23. **Configure Layers** (optional):
     - Layer 6: `FarmGrid`
     - Layer 7: `Animals`
     - Layer 8: `Buildings`
@@ -350,6 +395,15 @@ public class GameManager : Singleton<GameManager> { ... }
 - Notification system
 - Placeholder art generator
 - Mobile touch input support
+
+### Phase 4 (Player Character) ✓
+- Player character with WASD/arrow key movement
+- Shift to run, E to interact
+- Procedural animations (idle bob, walk/run limb swing)
+- Placeholder 3D farmer model (primitives)
+- Camera follows player
+- Player interaction with farm plots and animals
+- OpenGameArt sprite assets (CC-BY-SA 4.0) for item icons
 
 ---
 

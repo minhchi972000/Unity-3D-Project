@@ -71,6 +71,11 @@ namespace FarmValley.Events
         public static void TriggerNotification(string message) => OnNotification?.Invoke(message);
         public static void TriggerPanelRequested(string panelName) => OnPanelRequested?.Invoke(panelName);
 
+        // ===== Player Events =====
+        public static event Action<GameObject> OnPlayerInteract;
+
+        public static void TriggerPlayerInteract(GameObject target) => OnPlayerInteract?.Invoke(target);
+
         // ===== Game State Events =====
         public static event Action OnGameSaved;
         public static event Action OnGameLoaded;

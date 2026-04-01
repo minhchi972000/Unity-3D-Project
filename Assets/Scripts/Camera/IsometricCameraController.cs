@@ -25,6 +25,11 @@ namespace FarmValley.Camera
         [SerializeField] private float maxZoom = 25f;
         [SerializeField] private float zoomSmoothing = 5f;
 
+        [Header("Player Follow")]
+        [SerializeField] private Transform playerTarget;
+        [SerializeField] private bool followPlayer = true;
+        [SerializeField] private float followSmoothing = 6f;
+
         private Vector3 targetPosition;
         private float targetZoom;
         private UnityEngine.Camera cam;
@@ -58,12 +63,26 @@ namespace FarmValley.Camera
 
         private void Update()
         {
+            if (followPlayer && playerTarget != null)
+            {
+                // Follow player position
+                Vector3 playerPos = new Vector3(playerTarget.position.x, 0f, playerTarget.position.z);
+                targetPosition = Vector3.Lerp(targetPosition, playerPos, followSmoothing * Time.deltaTime);
+            }
+
             HandleInput();
             SmoothFollow();
         }
 
         private void HandleInput()
         {
+            // If following player, only handle zoom (not WASD pan)
+            if (followPlayer && playerTarget != null)
+            {
+                HandleZoomOnlyInput();
+                return;
+            }
+
             // Mobile touch input
             if (Input.touchCount > 0)
             {
@@ -72,6 +91,34 @@ namespace FarmValley.Camera
             else
             {
                 HandleMouseInput();
+            }
+        }
+
+        private void HandleZoomOnlyInput()
+        {
+            // Touch pinch zoom
+            if (Input.touchCount == 2)
+            {
+                Touch touch0 = Input.GetTouch(0);
+                Touch touch1 = Input.GetTouch(1);
+                float currentPinchDistance = Vector2.Distance(touch0.position, touch1.position);
+
+                if (touch1.phase == TouchPhase.Began)
+                {
+                    lastPinchDistance = currentPinchDistance;
+                    return;
+                }
+
+                float pinchDelta = lastPinchDistance - currentPinchDistance;
+                ZoomCamera(pinchDelta * 0.01f);
+                lastPinchDistance = currentPinchDistance;
+            }
+
+            // Mouse scroll zoom
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(scroll) > 0.01f)
+            {
+                ZoomCamera(-scroll * zoomSpeed * 5f);
             }
         }
 
@@ -196,6 +243,23 @@ namespace FarmValley.Camera
         public void LookAt(Vector3 worldPos)
         {
             targetPosition = new Vector3(worldPos.x, targetPosition.y, worldPos.z);
+        }
+
+        /// <summary>
+        /// Set the player transform for camera to follow
+        /// </summary>
+        public void SetFollowTarget(Transform target)
+        {
+            playerTarget = target;
+            followPlayer = target != null;
+        }
+
+        /// <summary>
+        /// Toggle player follow mode
+        /// </summary>
+        public void SetFollowPlayer(bool follow)
+        {
+            followPlayer = follow;
         }
     }
 }
