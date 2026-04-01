@@ -1,6 +1,8 @@
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
+using ISTouch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 #endif
 
 namespace FarmValley.Utils
@@ -9,9 +11,10 @@ namespace FarmValley.Utils
     /// Input compatibility layer that works with both the legacy Input Manager
     /// and the new Input System package.
     /// 
-    /// If your project uses "Input System Package (New)" in Player Settings,
-    /// this class uses UnityEngine.InputSystem APIs.
-    /// If it uses "Input Manager (Old)" or "Both", it uses UnityEngine.Input.
+    /// When the Input System package is installed (ENABLE_INPUT_SYSTEM defined),
+    /// this class ALWAYS uses UnityEngine.InputSystem APIs — regardless of whether
+    /// "Both" or "Input System Package (New)" is selected in Player Settings.
+    /// This avoids InvalidOperationException from legacy Input calls.
     /// </summary>
     public static class InputCompat
     {
@@ -19,7 +22,7 @@ namespace FarmValley.Utils
 
         public static bool GetKey(KeyCode key)
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
             var keyboard = Keyboard.current;
             if (keyboard == null) return false;
             var k = KeyCodeToKey(key);
@@ -31,7 +34,7 @@ namespace FarmValley.Utils
 
         public static bool GetKeyDown(KeyCode key)
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
             var keyboard = Keyboard.current;
             if (keyboard == null) return false;
             var k = KeyCodeToKey(key);
@@ -45,7 +48,7 @@ namespace FarmValley.Utils
 
         public static bool GetMouseButton(int button)
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
             var mouse = Mouse.current;
             if (mouse == null) return false;
             switch (button)
@@ -62,7 +65,7 @@ namespace FarmValley.Utils
 
         public static bool GetMouseButtonDown(int button)
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
             var mouse = Mouse.current;
             if (mouse == null) return false;
             switch (button)
@@ -81,7 +84,7 @@ namespace FarmValley.Utils
         {
             get
             {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
                 var mouse = Mouse.current;
                 if (mouse == null) return Vector3.zero;
                 Vector2 pos = mouse.position.ReadValue();
@@ -94,10 +97,10 @@ namespace FarmValley.Utils
 
         public static float GetMouseAxisX()
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
             var mouse = Mouse.current;
             if (mouse == null) return 0f;
-            return mouse.delta.x.ReadValue() * 0.05f; // Scale to approximate legacy Input.GetAxis range
+            return mouse.delta.x.ReadValue() * 0.05f;
 #else
             return Input.GetAxis("Mouse X");
 #endif
@@ -105,7 +108,7 @@ namespace FarmValley.Utils
 
         public static float GetMouseAxisY()
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
             var mouse = Mouse.current;
             if (mouse == null) return 0f;
             return mouse.delta.y.ReadValue() * 0.05f;
@@ -116,10 +119,10 @@ namespace FarmValley.Utils
 
         public static float GetScrollWheel()
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
             var mouse = Mouse.current;
             if (mouse == null) return 0f;
-            return mouse.scroll.y.ReadValue() / 120f * 0.1f; // Normalize to approximate legacy range
+            return mouse.scroll.y.ReadValue() / 120f * 0.1f;
 #else
             return Input.GetAxis("Mouse ScrollWheel");
 #endif
@@ -131,28 +134,18 @@ namespace FarmValley.Utils
         {
             get
             {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-                return UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches.Count;
+#if ENABLE_INPUT_SYSTEM
+                return ISTouch.activeTouches.Count;
 #else
                 return Input.touchCount;
 #endif
             }
         }
 
-        public static Touch GetTouch(int index)
-        {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-            // Return a default Touch - for new Input System, use GetTouchPosition/GetTouchPhase instead
-            return default;
-#else
-            return Input.GetTouch(index);
-#endif
-        }
-
         public static Vector2 GetTouchPosition(int index)
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-            var touches = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches;
+#if ENABLE_INPUT_SYSTEM
+            var touches = ISTouch.activeTouches;
             if (index < touches.Count)
                 return touches[index].screenPosition;
             return Vector2.zero;
@@ -163,8 +156,8 @@ namespace FarmValley.Utils
 
         public static TouchPhase GetTouchPhase(int index)
         {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-            var touches = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches;
+#if ENABLE_INPUT_SYSTEM
+            var touches = ISTouch.activeTouches;
             if (index >= touches.Count) return TouchPhase.Canceled;
             var phase = touches[index].phase;
             switch (phase)
@@ -187,28 +180,26 @@ namespace FarmValley.Utils
         {
             var eventSystem = UnityEngine.EventSystems.EventSystem.current;
             if (eventSystem == null) return false;
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-            // For new Input System, check if pointer is over a UI element
-            if (Mouse.current != null)
+
+#if ENABLE_INPUT_SYSTEM
+            // EventSystem.IsPointerOverGameObject can throw with new Input System
+            // if the UI Input Module is not properly configured. Wrap in try-catch.
+            try
             {
                 return eventSystem.IsPointerOverGameObject();
             }
-            return false;
+            catch (System.Exception)
+            {
+                return false;
+            }
 #else
             return eventSystem.IsPointerOverGameObject();
 #endif
         }
 
-        public static bool IsPointerOverUI(int fingerId)
-        {
-            var eventSystem = UnityEngine.EventSystems.EventSystem.current;
-            if (eventSystem == null) return false;
-            return eventSystem.IsPointerOverGameObject(fingerId);
-        }
-
         // ===== Key conversion helper =====
 
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+#if ENABLE_INPUT_SYSTEM
         private static Key KeyCodeToKey(KeyCode keyCode)
         {
             switch (keyCode)
@@ -241,16 +232,16 @@ namespace FarmValley.Utils
                 default: return Key.None;
             }
         }
-#endif
 
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
         /// <summary>
-        /// Call this once on startup to enable enhanced touch support for the new Input System.
+        /// Enable enhanced touch support for the new Input System.
+        /// Called automatically before scene loads.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void EnableEnhancedTouch()
         {
-            UnityEngine.InputSystem.EnhancedTouch.EnhancedTouchSupport.Enable();
+            if (!EnhancedTouchSupport.enabled)
+                EnhancedTouchSupport.Enable();
         }
 #endif
     }
