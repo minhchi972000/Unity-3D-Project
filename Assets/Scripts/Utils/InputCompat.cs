@@ -154,20 +154,20 @@ namespace FarmValley.Utils
 #endif
         }
 
-        public static TouchPhase GetTouchPhase(int index)
+        public static UnityEngine.TouchPhase GetTouchPhase(int index)
         {
 #if ENABLE_INPUT_SYSTEM
             var touches = ISTouch.activeTouches;
-            if (index >= touches.Count) return TouchPhase.Canceled;
+            if (index >= touches.Count) return UnityEngine.TouchPhase.Canceled;
             var phase = touches[index].phase;
             switch (phase)
             {
-                case UnityEngine.InputSystem.TouchPhase.Began: return TouchPhase.Began;
-                case UnityEngine.InputSystem.TouchPhase.Moved: return TouchPhase.Moved;
-                case UnityEngine.InputSystem.TouchPhase.Stationary: return TouchPhase.Stationary;
-                case UnityEngine.InputSystem.TouchPhase.Ended: return TouchPhase.Ended;
-                case UnityEngine.InputSystem.TouchPhase.Canceled: return TouchPhase.Canceled;
-                default: return TouchPhase.Canceled;
+                case UnityEngine.InputSystem.TouchPhase.Began: return UnityEngine.TouchPhase.Began;
+                case UnityEngine.InputSystem.TouchPhase.Moved: return UnityEngine.TouchPhase.Moved;
+                case UnityEngine.InputSystem.TouchPhase.Stationary: return UnityEngine.TouchPhase.Stationary;
+                case UnityEngine.InputSystem.TouchPhase.Ended: return UnityEngine.TouchPhase.Ended;
+                case UnityEngine.InputSystem.TouchPhase.Canceled: return UnityEngine.TouchPhase.Canceled;
+                default: return UnityEngine.TouchPhase.Canceled;
             }
 #else
             return Input.GetTouch(index).phase;
