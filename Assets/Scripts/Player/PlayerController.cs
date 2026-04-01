@@ -1,5 +1,6 @@
 using UnityEngine;
 using FarmValley.Events;
+using FarmValley.Utils;
 
 namespace FarmValley.Player
 {
@@ -49,14 +50,14 @@ namespace FarmValley.Player
             float horizontal = 0f;
             float vertical = 0f;
 
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) vertical = 1f;
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) vertical = -1f;
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) horizontal = -1f;
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) horizontal = 1f;
+            if (InputCompat.GetKey(KeyCode.W) || InputCompat.GetKey(KeyCode.UpArrow)) vertical = 1f;
+            if (InputCompat.GetKey(KeyCode.S) || InputCompat.GetKey(KeyCode.DownArrow)) vertical = -1f;
+            if (InputCompat.GetKey(KeyCode.A) || InputCompat.GetKey(KeyCode.LeftArrow)) horizontal = -1f;
+            if (InputCompat.GetKey(KeyCode.D) || InputCompat.GetKey(KeyCode.RightArrow)) horizontal = 1f;
 
             // Calculate movement direction relative to world (isometric-friendly)
             moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
-            isRunning = Input.GetKey(runKey);
+            isRunning = InputCompat.GetKey(runKey);
 
             if (moveDirection.magnitude > 0.1f)
             {
@@ -87,7 +88,7 @@ namespace FarmValley.Player
 
         private void HandleInteractionInput()
         {
-            if (Input.GetKeyDown(interactKey))
+            if (InputCompat.GetKeyDown(interactKey))
             {
                 TryInteract();
             }

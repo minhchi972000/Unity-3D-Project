@@ -43,9 +43,10 @@ namespace FarmValley.Systems
         {
             if (activeOrders.Count >= Constants.MAX_ACTIVE_ORDERS) return;
 
-            var gameData = GameManager.Instance.Data;
-            if (gameData.orders == null || gameData.orders.Length == 0) return;
+            var gameData = GameManager.Instance != null ? GameManager.Instance.Data : null;
+            if (gameData == null || gameData.orders == null || gameData.orders.Length == 0) return;
 
+            if (economy == null) return;
             int playerLevel = economy.CurrentLevel;
 
             // Filter orders by level

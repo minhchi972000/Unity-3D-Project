@@ -1,4 +1,5 @@
 using UnityEngine;
+using FarmValley.Utils;
 
 namespace FarmValley.Camera
 {
@@ -84,7 +85,7 @@ namespace FarmValley.Camera
             }
 
             // Mobile touch input
-            if (Input.touchCount > 0)
+            if (InputCompat.touchCount > 0)
             {
                 HandleTouchInput();
             }
@@ -97,13 +98,13 @@ namespace FarmValley.Camera
         private void HandleZoomOnlyInput()
         {
             // Touch pinch zoom
-            if (Input.touchCount == 2)
+            if (InputCompat.touchCount == 2)
             {
-                Touch touch0 = Input.GetTouch(0);
-                Touch touch1 = Input.GetTouch(1);
-                float currentPinchDistance = Vector2.Distance(touch0.position, touch1.position);
+                Vector2 pos0 = InputCompat.GetTouchPosition(0);
+                Vector2 pos1 = InputCompat.GetTouchPosition(1);
+                float currentPinchDistance = Vector2.Distance(pos0, pos1);
 
-                if (touch1.phase == TouchPhase.Began)
+                if (InputCompat.GetTouchPhase(1) == TouchPhase.Began)
                 {
                     lastPinchDistance = currentPinchDistance;
                     return;
@@ -115,7 +116,7 @@ namespace FarmValley.Camera
             }
 
             // Mouse scroll zoom
-            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            float scroll = InputCompat.GetScrollWheel();
             if (Mathf.Abs(scroll) > 0.01f)
             {
                 ZoomCamera(-scroll * zoomSpeed * 5f);
@@ -124,23 +125,24 @@ namespace FarmValley.Camera
 
         private void HandleTouchInput()
         {
-            if (Input.touchCount == 1)
+            if (InputCompat.touchCount == 1)
             {
-                Touch touch = Input.GetTouch(0);
+                Vector2 touchPos = InputCompat.GetTouchPosition(0);
+                TouchPhase phase = InputCompat.GetTouchPhase(0);
 
-                switch (touch.phase)
+                switch (phase)
                 {
                     case TouchPhase.Began:
-                        lastTouchPos = touch.position;
+                        lastTouchPos = touchPos;
                         isDragging = true;
                         break;
 
                     case TouchPhase.Moved:
                         if (isDragging)
                         {
-                            Vector2 delta = touch.position - lastTouchPos;
+                            Vector2 delta = touchPos - lastTouchPos;
                             PanCamera(-delta.x, -delta.y);
-                            lastTouchPos = touch.position;
+                            lastTouchPos = touchPos;
                         }
                         break;
 
@@ -150,15 +152,15 @@ namespace FarmValley.Camera
                         break;
                 }
             }
-            else if (Input.touchCount == 2)
+            else if (InputCompat.touchCount == 2)
             {
                 // Pinch to zoom
-                Touch touch0 = Input.GetTouch(0);
-                Touch touch1 = Input.GetTouch(1);
+                Vector2 pos0 = InputCompat.GetTouchPosition(0);
+                Vector2 pos1 = InputCompat.GetTouchPosition(1);
 
-                float currentPinchDistance = Vector2.Distance(touch0.position, touch1.position);
+                float currentPinchDistance = Vector2.Distance(pos0, pos1);
 
-                if (touch1.phase == TouchPhase.Began)
+                if (InputCompat.GetTouchPhase(1) == TouchPhase.Began)
                 {
                     lastPinchDistance = currentPinchDistance;
                     isDragging = false;
@@ -174,15 +176,15 @@ namespace FarmValley.Camera
         private void HandleMouseInput()
         {
             // Right-click drag to pan
-            if (Input.GetMouseButton(1) || (Input.GetMouseButton(0) && Input.GetKey(KeyCode.LeftAlt)))
+            if (InputCompat.GetMouseButton(1) || (InputCompat.GetMouseButton(0) && InputCompat.GetKey(KeyCode.LeftAlt)))
             {
-                float mouseX = Input.GetAxis("Mouse X");
-                float mouseY = Input.GetAxis("Mouse Y");
+                float mouseX = InputCompat.GetMouseAxisX();
+                float mouseY = InputCompat.GetMouseAxisY();
                 PanCamera(-mouseX * 0.5f, -mouseY * 0.5f);
             }
 
             // Scroll wheel to zoom
-            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            float scroll = InputCompat.GetScrollWheel();
             if (Mathf.Abs(scroll) > 0.01f)
             {
                 ZoomCamera(-scroll * zoomSpeed * 5f);
@@ -190,10 +192,10 @@ namespace FarmValley.Camera
 
             // WASD/Arrow keys for panning
             float h = 0f, v = 0f;
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) v = 1f;
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) v = -1f;
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) h = -1f;
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) h = 1f;
+            if (InputCompat.GetKey(KeyCode.W) || InputCompat.GetKey(KeyCode.UpArrow)) v = 1f;
+            if (InputCompat.GetKey(KeyCode.S) || InputCompat.GetKey(KeyCode.DownArrow)) v = -1f;
+            if (InputCompat.GetKey(KeyCode.A) || InputCompat.GetKey(KeyCode.LeftArrow)) h = -1f;
+            if (InputCompat.GetKey(KeyCode.D) || InputCompat.GetKey(KeyCode.RightArrow)) h = 1f;
 
             if (Mathf.Abs(h) > 0.01f || Mathf.Abs(v) > 0.01f)
             {

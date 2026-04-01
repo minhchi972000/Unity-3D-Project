@@ -1,6 +1,7 @@
 using UnityEngine;
 using FarmValley.Systems;
 using FarmValley.Events;
+using FarmValley.Utils;
 
 namespace FarmValley.Core
 {
@@ -48,28 +49,26 @@ namespace FarmValley.Core
         private void HandleInput()
         {
             // Skip if over UI
-            if (UnityEngine.EventSystems.EventSystem.current != null &&
-                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            if (InputCompat.IsPointerOverUI())
                 return;
 
             // Handle touch input
-            if (Input.touchCount > 0)
+            if (InputCompat.touchCount > 0)
             {
-                Touch touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Began)
+                TouchPhase phase = InputCompat.GetTouchPhase(0);
+                if (phase == TouchPhase.Began)
                 {
                     // Skip if over UI for touch
-                    if (UnityEngine.EventSystems.EventSystem.current != null &&
-                        UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                    if (InputCompat.IsPointerOverUI())
                         return;
 
-                    HandleTap(touch.position);
+                    HandleTap(InputCompat.GetTouchPosition(0));
                 }
             }
             // Handle mouse click
-            else if (Input.GetMouseButtonDown(0))
+            else if (InputCompat.GetMouseButtonDown(0))
             {
-                HandleTap(Input.mousePosition);
+                HandleTap(InputCompat.mousePosition);
             }
         }
 
